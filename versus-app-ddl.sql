@@ -7,3 +7,5 @@ create table person (
 	first_name varchar(30) not null,
 	last_name varchar(30) not null
 )
+
+insert into person values (default, 'asdf', 'asdf', 'asdf', 'asdf')
