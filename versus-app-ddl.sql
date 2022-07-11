@@ -8,4 +8,4 @@ create table person (
 	last_name varchar(30) not null
 )
 
-insert into person values (default, 'asdf', 'asdf', 'asdf', 'asdf')
+insert into person values (default, 'asd', 'asdf', 'asdf', 'asdf')

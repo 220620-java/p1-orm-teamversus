@@ -7,27 +7,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import com.revature.versusapp.models.User;
 import com.revature.versusapp.utils.ConnectionUtil;
 
-public class UserORM implements UserDAO{
+public class ORM implements DataAccessObject<Object> {
 	private ConnectionUtil connUtil = ConnectionUtil.getConnectionUtil();
 	@Override
-	public User create(User newUser) {
-		
+	public Object create(Object object) {
 		try (Connection conn = connUtil.getConnection()){
 			conn.setAutoCommit(false);
 			StringBuilder sql = new StringBuilder();
-			Class objectClass = newUser.getClass();
-			sql.append("insert into person values (");
+			Class objectClass = object.getClass();
+			sql.append("insert into " + objectClass.getName() + " values (");
 			for(Field field : objectClass.getDeclaredFields()) {
 				field.setAccessible(true);
 				if (field.getName().equals("id")) {
 					sql.append("default, ");
 				} else if (field.getType().isPrimitive()) {
-					sql.append(field.get(newUser) + ", ");
+					sql.append(field.get(object) + ", ");
 				} else {
-					sql.append("'" + field.get(newUser) + "', ");
+					sql.append("'" + field.get(object) + "', ");
 				}
 			}
 			sql.delete(sql.length()-2, sql.length());
@@ -37,7 +35,6 @@ public class UserORM implements UserDAO{
 			int rowsAffected = stmt.executeUpdate();
 			ResultSet resultSet = stmt.getGeneratedKeys();
 			if (resultSet.next() && rowsAffected == 1) {
-				newUser.setId(resultSet.getInt("id"));
 				conn.commit();
 			} else {
 				conn.rollback();
@@ -52,29 +49,29 @@ public class UserORM implements UserDAO{
 			e.printStackTrace();
 		}
 		
-		return newUser;
+		return object;
 	}
 
 	@Override
-	public User findById(int id) {
+	public Object findById(int id) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<User> findAll() {
+	public List<Object> findAll() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void update(User t) {
+	public void update(Object object) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void delete(User t) {
+	public void delete(Object object) {
 		// TODO Auto-generated method stub
 		
 	}
