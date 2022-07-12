@@ -2,18 +2,32 @@ package com.revature.versusapp.models;
 
 import java.util.Objects;
 
-public class User {
+public class Person {
 	private int id;
 	private String username;
-	private String password;
+	private String passwrd;
 	private String firstName;
 	private String lastName;
 	
-	public User(int id, String username, String password, String firstName, String lastName) {
+	public Person() {
+		super();
+	}
+	public Person(int id) {
+		super();
+		this.id = id;
+	}
+	public Person(String username, String password, String firstName, String lastName) {
+		super();
+		this.username = username;
+		this.passwrd = password;
+		this.firstName = firstName;
+		this.lastName = lastName;
+	}
+	public Person(int id, String username, String password, String firstName, String lastName) {
 		super();
 		this.id = id;
 		this.username = username;
-		this.password = password;
+		this.passwrd = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}
@@ -30,10 +44,10 @@ public class User {
 		this.username = username;
 	}
 	public String getPassword() {
-		return password;
+		return passwrd;
 	}
 	public void setPassword(String password) {
-		this.password = password;
+		this.passwrd = password;
 	}
 	public String getFirstName() {
 		return firstName;
@@ -49,7 +63,7 @@ public class User {
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(firstName, id, lastName, password, username);
+		return Objects.hash(firstName, id, lastName, passwrd, username);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -59,13 +73,13 @@ public class User {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		User other = (User) obj;
+		Person other = (Person) obj;
 		return Objects.equals(firstName, other.firstName) && id == other.id && Objects.equals(lastName, other.lastName)
-				&& Objects.equals(password, other.password) && Objects.equals(username, other.username);
+				&& Objects.equals(passwrd, other.passwrd) && Objects.equals(username, other.username);
 	}
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", username=" + username + ", password=" + password + ", firstName=" + firstName
+		return "User [id=" + id + ", username=" + username + ", password=" + passwrd + ", firstName=" + firstName
 				+ ", lastName=" + lastName + "]";
 	}
 }
