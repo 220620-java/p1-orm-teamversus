@@ -5,9 +5,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
-import com.revature.versusapp.models.Person;
 import com.revature.versusapp.utils.ConnectionUtil;
 
 public class ORM implements DataAccessObject<Object> {
@@ -31,8 +31,8 @@ public class ORM implements DataAccessObject<Object> {
 			}
 			sql.delete(sql.length()-2, sql.length());
 			sql.append(");");
-			System.out.println(sql);
-			PreparedStatement stmt = conn.prepareStatement(sql.toString());
+			String[] keys = {"id"};
+			PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
 			int rowsAffected = stmt.executeUpdate();
 			ResultSet resultSet = stmt.getGeneratedKeys();
 			if (resultSet.next() && rowsAffected == 1) {
@@ -75,7 +75,6 @@ public class ORM implements DataAccessObject<Object> {
 			id.setAccessible(true);
 			
 			sql.append("select * from " + objectClass.getSimpleName() + " where id=" + id.get(object));
-			System.out.println(sql);
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
 			ResultSet resultSet = stmt.executeQuery();
 			if (resultSet.next()) {
@@ -108,7 +107,20 @@ public class ORM implements DataAccessObject<Object> {
 
 	@Override
 	public void delete(Object object) {
-		// TODO Auto-generated method stub
+		try (Connection conn = connUtil.getConnection()) {
+			conn.setAutoCommit(false);
+			StringBuilder sql = new StringBuilder();
+			Class objectClass = object.getClass();
+			Field id = objectClass.getDeclaredField("id");
+			id.setAccessible(true);
+			sql.append("delete from " + objectClass.getSimpleName() + " where id=" + id.get(object));
+			System.out.println(sql);
+			Statement stmt = conn.createStatement();
+			int rowsAffected = stmt.executeUpdate(sql.toString());
+			conn.commit();
+		} catch (SQLException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
