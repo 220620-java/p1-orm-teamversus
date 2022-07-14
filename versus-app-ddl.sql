@@ -8,4 +8,19 @@ create table person (
 	last_name varchar(30) not null
 )
 
-insert into person values (default, 'asd', 'asdf', 'asdf', 'asdf') 
+create table artist (
+	id serial primary key,
+	stage_name varchar(30) not null
+)
+
+create table album (
+	id serial primary key,
+	title varchar(30) not null,
+	artist_id integer references artist(id)
+)
+
+create table inventory (
+	person_id integer references person(id),
+	album_id integer references album(id),
+	primary key(person_id, album_id)
+)
