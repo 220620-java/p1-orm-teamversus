@@ -23,9 +23,10 @@ public class ORM implements DataAccessObject<Object> {
 			StringBuilder sql = new StringBuilder();
 			Class objectClass = object.getClass();
 			sql.append("insert into " + objectClass.getSimpleName() + " values (");
+			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
 			for(Field field : objectClass.getDeclaredFields()) {
 				field.setAccessible(true);
-				if (field.getName().equals("id")) {
+				if (field.getName().equals(primaryKey.name()[0])) {
 					sql.append("default, ");
 				} else if (field.getType().isPrimitive()) {
 					sql.append(field.get(object) + ", ");
@@ -35,11 +36,17 @@ public class ORM implements DataAccessObject<Object> {
 			}
 			sql.delete(sql.length()-2, sql.length());
 			sql.append(");");
-			String[] keys = {"id"};
+			String[] keys = primaryKey.name();
 			PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
 			int rowsAffected = stmt.executeUpdate();
 			ResultSet resultSet = stmt.getGeneratedKeys();
 			if (resultSet.next() && rowsAffected == 1) {
+				System.out.println(rowsAffected);
+				for (String key : primaryKey.name()) {
+					Field field = objectClass.getDeclaredField(key);
+					field.setAccessible(true);
+					field.set(object, resultSet.getInt(key));
+				}
 				conn.commit();
 			} else {
 				conn.rollback();
@@ -48,12 +55,20 @@ public class ORM implements DataAccessObject<Object> {
 			
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
+			return null;
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
+			return null;
 		} catch (SQLException e) {
 			e.printStackTrace();
+			return null;
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+			return null;
+		} catch (SecurityException e) {
+			e.printStackTrace();
+			return null;
 		}
-		
 		return object;
 	}
 	
@@ -110,8 +125,9 @@ public class ORM implements DataAccessObject<Object> {
 			conn.setAutoCommit(false);
 			StringBuilder sql = new StringBuilder();
 			Class objectClass = object.getClass();
+			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
 			sql.append("select * from " + objectClass.getSimpleName());
-			String[] keys = {"id"};
+			String[] keys = primaryKey.name();
 			PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
 			ResultSet resultSet = stmt.executeQuery();
 			while (resultSet.next()) {
@@ -138,11 +154,11 @@ public class ORM implements DataAccessObject<Object> {
 			conn.setAutoCommit(false);
 			StringBuilder sql = new StringBuilder();
 			Class objectClass = object.getClass();
-
+			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
 			sql.append("update " + objectClass.getSimpleName() + " set ");
 			for(Field field : objectClass.getDeclaredFields()) {
 				field.setAccessible(true);
-				if (field.getName().contains("id")) {
+				if (field.getName().equals(primaryKey.name()[0])) {
 				} else if (field.getType().isPrimitive()) {
 					sql.append(getSnakeCase(field.getName()) + "=" + field.get(object) + ", ");
 				} else {
@@ -151,7 +167,6 @@ public class ORM implements DataAccessObject<Object> {
 			}
 			sql.delete(sql.length()-2, sql.length());
 			sql.append(" where ");
-			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
 			for (String key : primaryKey.name()) {
 				Field field = objectClass.getDeclaredField(key);
 				System.out.println(field.getName());
@@ -159,7 +174,7 @@ public class ORM implements DataAccessObject<Object> {
 				sql.append(key + "=" + field.get(object));
 			}
 
-			String[] keys = {"id"};
+			String[] keys = primaryKey.name();
 			PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
 			int rowsAffected = stmt.executeUpdate();
 			ResultSet resultSet = stmt.getGeneratedKeys();
