@@ -75,8 +75,6 @@ public class ORM implements DataAccessObject<Object> {
 			conn.setAutoCommit(false);
 			StringBuilder sql = new StringBuilder();
 			Class objectClass = object.getClass();
-			Field id = objectClass.getDeclaredField("id");
-			id.setAccessible(true);
 
 			sql.append("select * from " + objectClass.getSimpleName() + " where ");
 			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
@@ -140,8 +138,6 @@ public class ORM implements DataAccessObject<Object> {
 			conn.setAutoCommit(false);
 			StringBuilder sql = new StringBuilder();
 			Class objectClass = object.getClass();
-			Field id = objectClass.getDeclaredField("id");
-			id.setAccessible(true);
 
 			sql.append("update " + objectClass.getSimpleName() + " set ");
 			for(Field field : objectClass.getDeclaredFields()) {
@@ -185,9 +181,14 @@ public class ORM implements DataAccessObject<Object> {
 			conn.setAutoCommit(false);
 			StringBuilder sql = new StringBuilder();
 			Class objectClass = object.getClass();
-			Field id = objectClass.getDeclaredField("id");
-			id.setAccessible(true);
-			sql.append("delete from " + objectClass.getSimpleName() + " where id=" + id.get(object));
+			sql.append("delete from " + objectClass.getSimpleName() + " where ");
+			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
+			for (String key : primaryKey.name()) {
+				Field field = objectClass.getDeclaredField(key);
+				System.out.println(field.getName());
+				field.setAccessible(true);
+				sql.append(key + "=" + field.get(object));
+			}
 			Statement stmt = conn.createStatement();
 			int rowsAffected = stmt.executeUpdate(sql.toString());
 			conn.commit();
