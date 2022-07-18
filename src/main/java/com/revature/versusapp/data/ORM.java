@@ -198,11 +198,19 @@ public class ORM implements DataAccessObject<Object> {
 			Class objectClass = object.getClass();
 			sql.append("delete from " + objectClass.getSimpleName() + " where ");
 			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
-			for (String key : primaryKey.name()) {
-				Field field = objectClass.getDeclaredField(key);
-				System.out.println(field.getName());
-				field.setAccessible(true);
-				sql.append(key + "=" + field.get(object));
+			if (primaryKey.equals(null)) {
+				for (Field field : objectClass.getDeclaredFields()) {
+					field.setAccessible(true);
+					sql.append(field.getName() + " = " + field.get(object) + ", ");
+				}
+				sql.delete(sql.length()-2, sql.length());
+			} else {
+				for (String key : primaryKey.name()) {
+					Field field = objectClass.getDeclaredField(key);
+					System.out.println(field.getName());
+					field.setAccessible(true);
+					sql.append(key + "=" + field.get(object));
+				}
 			}
 			Statement stmt = conn.createStatement();
 			int rowsAffected = stmt.executeUpdate(sql.toString());
