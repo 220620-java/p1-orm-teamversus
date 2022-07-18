@@ -1,7 +1,7 @@
 package com.revature.versusapp.models;
 
 import java.util.Objects;
-
+@PrimaryKey(name={"id"})
 public class Person {
 	private int id;
 	private String username;
@@ -10,21 +10,17 @@ public class Person {
 	private String lastName;
 	
 	public Person() {
-		super();
 	}
 	public Person(int id) {
-		super();
 		this.id = id;
 	}
 	public Person(String username, String password, String firstName, String lastName) {
-		super();
 		this.username = username;
 		this.passwrd = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}
 	public Person(int id, String username, String password, String firstName, String lastName) {
-		super();
 		this.id = id;
 		this.username = username;
 		this.passwrd = password;
