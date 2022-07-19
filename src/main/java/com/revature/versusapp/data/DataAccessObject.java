@@ -29,7 +29,7 @@ public interface DataAccessObject<T> {
 	 * 
 	 * @return a List of the retrieved objects
 	 */
-	public List<T> findAll(T t);
+	public List<T> findAll(Class<?> t);
 	
 	/**
 	 * Updates the object in the data source by matching the identifier 

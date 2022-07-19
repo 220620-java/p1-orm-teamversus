@@ -1,8 +1,4 @@
-import java.lang.reflect.Field;
-
 import com.revature.versusapp.data.ORM;
-import com.revature.versusapp.models.Person;
-import com.revature.versusapp.models.PrimaryKey;
 
 public class VersusAppDriver {
 	private static ORM ORM = new ORM();
@@ -16,17 +12,17 @@ public class VersusAppDriver {
 //		
 //		System.out.println(ORM.findById(test));
 //		
-		Person person = new Person();
-		Class objectClass = person.getClass();
-		
-		PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
-		System.out.println(primaryKey);
-		for (String key : primaryKey.name()) {
-			Field field = objectClass.getDeclaredField(key);
-			System.out.println(field.getName());
-			field.setAccessible(true);
-		}
-		ORM.delete(person);
+//		Person person = new Person();
+//		Class objectClass = person.getClass();
+//		
+//		PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
+//		System.out.println(primaryKey);
+//		for (String key : primaryKey.name()) {
+//			Field field = objectClass.getDeclaredField(key);
+//			System.out.println(field.getName());
+//			field.setAccessible(true);
+//		}
+//		ORM.delete(person);
 	}
 	
 }

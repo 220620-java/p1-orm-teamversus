@@ -1,5 +1,6 @@
 package com.revature.versusapp.data;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -8,10 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import com.revature.versusapp.models.Person;
-import com.revature.versusapp.models.PrimaryKey;
 import com.revature.versusapp.utils.ConnectionUtil;
 
 public class ORM implements DataAccessObject<Object> {
@@ -117,22 +117,27 @@ public class ORM implements DataAccessObject<Object> {
 		return object;
 	}
 
-	@Override
-	public List<Object> findAll(Object object) {
+	@SuppressWarnings("unchecked")
+    @Override
+	public List<Object> findAll(Class<?> type) {
 		List<Object> allRecords = new ArrayList<>();
 		
 		try (Connection conn = connUtil.getConnection()){
 			conn.setAutoCommit(false);
 			StringBuilder sql = new StringBuilder();
-			Class objectClass = object.getClass();
-			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
-			sql.append("select * from " + objectClass.getSimpleName());
-			String[] keys = primaryKey.name();
+			//Class objectClass = object.getClass();
+			
+			System.out.println("=======debug======");
+			System.out.println(type);
+			
+			Annotation primaryKey = (Annotation) type.getAnnotation(PrimaryKey.class);
+			sql.append("select * from " + type.getSimpleName());
+			String[] keys = (String[]) primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey);
 			PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
 			ResultSet resultSet = stmt.executeQuery();
 			while (resultSet.next()) {
-				Object newObject = objectClass.getConstructor().newInstance();
-				for (Field field : objectClass.getDeclaredFields()) {
+				Object newObject = type.getConstructor().newInstance();
+				for (Field field : type.getDeclaredFields()) {
 					field.setAccessible(true);
 					String columnName = getSnakeCase(field.getName());
 					field.set(newObject, resultSet.getObject(columnName));
