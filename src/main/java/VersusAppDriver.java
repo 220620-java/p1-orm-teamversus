@@ -1,4 +1,5 @@
 import com.revature.versusapp.data.ORM;
+import com.revature.versusapp.models.Person;
 
 public class VersusAppDriver {
 	private static ORM ORM = new ORM();
@@ -23,6 +24,8 @@ public class VersusAppDriver {
 //			field.setAccessible(true);
 //		}
 //		ORM.delete(person);
+		Person person = new Person(1);
+		System.out.println(ORM.findById(person));
 	}
 	
 }
