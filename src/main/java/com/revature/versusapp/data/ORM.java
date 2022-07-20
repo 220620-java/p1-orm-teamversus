@@ -1,6 +1,7 @@
 package com.revature.versusapp.data;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -125,14 +126,14 @@ public class ORM implements DataAccessObject<Object> {
 		try (Connection conn = connUtil.getConnection()){
 			conn.setAutoCommit(false);
 			StringBuilder sql = new StringBuilder();
-			//Class objectClass = object.getClass();
-			
-			System.out.println("=======debug======");
-			System.out.println(type);
-			
 			Annotation primaryKey = (Annotation) type.getAnnotation(PrimaryKey.class);
 			sql.append("select * from " + type.getSimpleName());
-			String[] keys = (String[]) primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey);
+			String[] keys = new String[] {};
+			if (primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey).equals(null)) {
+				keys = new String[] {"id"};
+			} else {
+				keys = (String[]) primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey);
+			}
 			PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
 			ResultSet resultSet = stmt.executeQuery();
 			while (resultSet.next()) {
