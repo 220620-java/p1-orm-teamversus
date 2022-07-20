@@ -128,12 +128,7 @@ public class ORM implements DataAccessObject<Object> {
 			StringBuilder sql = new StringBuilder();
 			Annotation primaryKey = (Annotation) type.getAnnotation(PrimaryKey.class);
 			sql.append("select * from " + type.getSimpleName());
-			String[] keys = new String[] {};
-			if (primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey).equals(null)) {
-				keys = new String[] {"id"};
-			} else {
-				keys = (String[]) primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey);
-			}
+			String[] keys = (String[]) primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey);
 			PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
 			ResultSet resultSet = stmt.executeQuery();
 			while (resultSet.next()) {
