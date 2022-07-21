@@ -24,8 +24,10 @@ public class VersusAppDriver {
 //			field.setAccessible(true);
 //		}
 //		ORM.delete(person);
-		Person person = new Person(1);
-		System.out.println(ORM.findById(person));
+		Person person = new Person("asdf", "asdf", "asdf", "asdf");
+		//person = (Person) ORM.create(person);
+		System.out.println(person);
+		ORM.delete(person);
 	}
 	
 }
