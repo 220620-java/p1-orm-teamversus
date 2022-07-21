@@ -49,5 +49,3 @@ We use this custom annotation to store the field name that corresponds with the 
 * Api Key
   * id
   * person_id references Person
-
-p1-orm-teamversus created by GitHub Classroom
