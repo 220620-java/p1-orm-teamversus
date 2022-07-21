@@ -217,33 +217,19 @@ public class ORM implements DataAccessObject<Object> {
 			Class objectClass = object.getClass();
 			sql.append("delete from " + objectClass.getSimpleName() + " where ");
 			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
-//			if (primaryKey.equals(null)) {
-//				for (Field field : objectClass.getDeclaredFields()) {
-//					field.setAccessible(true);
-//					if (field.get(object) != null ) {
-//					    sql.append(field.getName() + " = " + field.get(object) + ", ");
-//					}
-//				}
-//				sql.delete(sql.length()-2, sql.length());
-//			} else {
-                for (Field field : objectClass.getDeclaredFields()) {
-                    field.setAccessible(true);
-                    if (field.get(object) != null && (int) field.get(object) != 0 ) {
-                        sql.append(getSnakeCase( field.getName()) + " = " + field.get(object) + " and ");
-                    }
+            for (Field field : objectClass.getDeclaredFields()) {
+            	field.setAccessible(true);
+                if(field.getType().equals(int.class)) {
+                   	if((int) field.get(object) != 0) {
+                   		sql.append(getSnakeCase( field.getName()) + " = " + field.get(object) + " and ");
+                   	}
+                } else {
+                   	if(!field.get(object).equals(null)) {
+                   		sql.append(getSnakeCase( field.getName()) + " = '" + field.get(object) + "' and ");
+                   	}
                 }
-                sql.delete(sql.length()-4, sql.length());
-//				for (String key : primaryKey.name()) {
-//					Field field = objectClass.getDeclaredField(key);
-//					System.out.println(field.getName());
-//					field.setAccessible(true);
-//					if (field.get(object) != null ) {
-//					    sql.append(key + "=" + field.get(object));
-//					}
-//				}
-//			}
-			
-			System.out.println(sql.toString());
+            }
+            sql.delete(sql.length()-4, sql.length());
 			Statement stmt = conn.createStatement();
 			int rowsAffected = stmt.executeUpdate(sql.toString());
 			conn.commit();
