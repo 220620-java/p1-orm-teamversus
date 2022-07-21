@@ -13,7 +13,7 @@ public interface DataAccessObject<T> {
 	 * @param t the object to be added to the data source
 	 * @return the object that was added or null if the object was unable to be added
 	 */
-	public T create(T t);
+	public T create(T t,Class<?> t1);
 	
 	/**
 	 * Retrieves the object from the data source that matches 

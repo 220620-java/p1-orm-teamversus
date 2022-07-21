@@ -18,16 +18,19 @@ import com.revature.versusapp.utils.ConnectionUtil;
 public class ORM implements DataAccessObject<Object> {
 	private ConnectionUtil connUtil = ConnectionUtil.getConnectionUtil();
 	@Override
-	public Object create(Object object) {
+	public Object create(Object object,Class<?> type) {
 		try (Connection conn = connUtil.getConnection()){
 			conn.setAutoCommit(false);
 			StringBuilder sql = new StringBuilder();
 			Class objectClass = object.getClass();
 			sql.append("insert into " + objectClass.getSimpleName() + " values (");
-			PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
+			Annotation primaryKey = (Annotation) type.getAnnotation(PrimaryKey.class);
+			System.out.println(primaryKey.getClass().toGenericString());
+			
+			String[] strArray = (String[])primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey);
 			for(Field field : objectClass.getDeclaredFields()) {
 				field.setAccessible(true);
-				if (field.getName().equals(primaryKey.name()[0])) {
+				if (field.getName().equals(strArray[0])) {
 					sql.append("default, ");
 				} else if (field.getType().isPrimitive()) {
 					sql.append(field.get(object) + ", ");
@@ -46,12 +49,13 @@ public class ORM implements DataAccessObject<Object> {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            System.out.println(sql.toString());
 			PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
 			int rowsAffected = stmt.executeUpdate();
 			ResultSet resultSet = stmt.getGeneratedKeys();
 			if (resultSet.next() && rowsAffected == 1) {
 				System.out.println(rowsAffected);
-				for (String key : primaryKey.name()) {
+				for (String key : strArray ) {
 					Field field = objectClass.getDeclaredField(key);
 					field.setAccessible(true);
 					field.set(object, resultSet.getInt(key));
@@ -77,7 +81,13 @@ public class ORM implements DataAccessObject<Object> {
 		} catch (SecurityException e) {
 			e.printStackTrace();
 			return null;
-		}
+		} catch (InvocationTargetException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } catch (NoSuchMethodException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 		return object;
 	}
 	
