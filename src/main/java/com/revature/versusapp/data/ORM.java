@@ -18,78 +18,71 @@ import com.revature.versusapp.utils.ConnectionUtil;
 public class ORM implements DataAccessObject<Object> {
 	private ConnectionUtil connUtil = ConnectionUtil.getConnectionUtil();
 	@Override
-	public Object create(Object object,Class<?> type) {
-		try (Connection conn = connUtil.getConnection()){
-			conn.setAutoCommit(false);
-			StringBuilder sql = new StringBuilder();
-			Class objectClass = object.getClass();
-			sql.append("insert into " + objectClass.getSimpleName() + " values (");
-			Annotation primaryKey = (Annotation) type.getAnnotation(PrimaryKey.class);
-			System.out.println(primaryKey.getClass().toGenericString());
-			
-			String[] strArray = (String[])primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey);
-			for(Field field : objectClass.getDeclaredFields()) {
-				field.setAccessible(true);
-				if (field.getName().equals(strArray[0])) {
-					sql.append("default, ");
-				} else if (field.getType().isPrimitive()) {
-					sql.append(field.get(object) + ", ");
-				} else {
-					sql.append("'" + field.get(object) + "', ");
-				}
-			}
-			sql.delete(sql.length()-2, sql.length());
-			sql.append(");");
-			String[] keys = null;
+	public Object create(Object object) {
+        try (Connection conn = connUtil.getConnection()){
+            conn.setAutoCommit(false);
+            StringBuilder sql = new StringBuilder();
+            Class objectClass = object.getClass();
+            sql.append("insert into " + objectClass.getSimpleName() + " values (");
+            
+            
+            PrimaryKey primaryKey = (PrimaryKey) objectClass.getAnnotation(PrimaryKey.class);
+            for(Field field : objectClass.getDeclaredFields()) {
+                field.setAccessible(true);
+                System.out.println(field.getName());
+                if ( primaryKey != null &&  field.getName().equals(primaryKey.name()[0])) {
+                    sql.append("default, ");
+                } else if (field.getType().isPrimitive()) {
+                    sql.append(field.get(object) + ", ");
+                } else {
+                    sql.append("'" + field.get(object) + "', ");
+                }
+            }
+            sql.delete(sql.length()-2, sql.length());
+            sql.append(");");
+            System.out.println(sql);
+            String[] keys = null;
             try {
                 keys = (String[]) primaryKey.getClass().getDeclaredMethod("name").invoke(primaryKey);
                 
-                System.out.println("in ORM create keys  = " + Arrays.toString(keys));
             } catch (InvocationTargetException | NoSuchMethodException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            System.out.println(sql.toString());
-			PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
-			int rowsAffected = stmt.executeUpdate();
-			ResultSet resultSet = stmt.getGeneratedKeys();
-			if (resultSet.next() && rowsAffected == 1) {
-				System.out.println(rowsAffected);
-				for (String key : strArray ) {
-					Field field = objectClass.getDeclaredField(key);
-					field.setAccessible(true);
-					field.set(object, resultSet.getInt(key));
-				}
-				conn.commit();
-			} else {
-				conn.rollback();
-				return null;
-			}
-			
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-			return null;
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-			return null;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
-			return null;
-		} catch (SecurityException e) {
-			e.printStackTrace();
-			return null;
-		} catch (InvocationTargetException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        } catch (NoSuchMethodException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            PreparedStatement stmt = conn.prepareStatement(sql.toString(), keys);
+            int rowsAffected = stmt.executeUpdate();
+            ResultSet resultSet = stmt.getGeneratedKeys();
+            if (resultSet.next() && rowsAffected == 1) {
+                System.out.println(rowsAffected);
+                for (String key : primaryKey.name()) {
+                    Field field = objectClass.getDeclaredField(key);
+                    field.setAccessible(true);
+                    field.set(object, resultSet.getInt(key));
+                }
+                conn.commit();
+            } else {
+                conn.rollback();
+                return null;
+            }
+            
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return null;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            return null;
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            return null;
         }
-		return object;
-	}
+        return object;
+    }
 	
 	public String getSnakeCase(String string) {
 		StringBuilder temp = new StringBuilder();
